@@ -29,6 +29,9 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
     private SshServer sshd;
 
     public void execute() throws MojoFailureException {
+        if (isSkip()) {
+            return;
+        }
         getLog().info("Server root is " + serverRoot.getPath());
         boolean serverRootExists = serverRoot.exists();
         if (!serverRootExists) {
@@ -38,11 +41,12 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
             initServer();
             try {
                 sshd.start();
+                getLog().info("Started SFTP Server on port " + port);
             } catch (IOException e) {
                 throw new MojoFailureException("Failed to start SFTP server", e);
             }
         } else {
-            throw new MojoFailureException("Failed to create FTP root " + serverRoot.getPath());
+            throw new MojoFailureException("Failed to create SFTP root " + serverRoot.getPath());
         }
         if (mavenProject != null) {
             Properties properties = mavenProject.getProperties();
@@ -53,7 +57,7 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
     }
 
     private void initServer() throws MojoFailureException {
-        getLog().info("About to start FTP server...");
+        getLog().info("About to start SFTP server...");
         List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
         if (authorisedKeysFile != null) {
             sshd = ServerBuilder.builder()
@@ -70,7 +74,7 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         if (authorisedKeysFile == null && password == null) {
             userAuthFactories.add(new UserAuthNoneFactory());
         }
-        
+
         sshd.setPort(port);
 
         AbstractGeneratorHostKeyProvider hostKeyProvider = SecurityUtils.createGeneratorHostKeyProvider(serverKey.toPath());

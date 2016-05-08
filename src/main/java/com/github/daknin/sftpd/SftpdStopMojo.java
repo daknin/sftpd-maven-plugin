@@ -12,7 +12,9 @@ import java.util.Properties;
 public class SftpdStopMojo extends AbstractSftpdMojo {
 
     public void execute() throws MojoFailureException {
-
+        if (isSkip()) {
+            return;
+        }
         getLog().info("Stopping FTP server...");
         Properties properties = null;
         if (mavenProject != null) {
