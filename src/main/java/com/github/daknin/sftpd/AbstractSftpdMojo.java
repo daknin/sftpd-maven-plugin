@@ -11,7 +11,7 @@ public abstract class AbstractSftpdMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true)
     protected MavenProject mavenProject;
 
-    @Parameter(property = "serverRoot", defaultValue = "${project.build.directory}/sftpd/root")
+    @Parameter(property = "serverRoot", defaultValue = "${project.build.directory}/sftpd/")
     protected File serverRoot;
 
     @Parameter(property = "username", defaultValue = "user")

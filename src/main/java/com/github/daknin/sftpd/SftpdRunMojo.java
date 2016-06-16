@@ -57,7 +57,7 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
         if (authorisedKeysFile != null) {
             sshd = ServerBuilder.builder()
-                    .publickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator("theUser", authorisedKeysFile, false))
+                    .publickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(username, authorisedKeysFile, false))
                     .build();
             userAuthFactories.add(new UserAuthPublicKeyFactory());
         } else {
