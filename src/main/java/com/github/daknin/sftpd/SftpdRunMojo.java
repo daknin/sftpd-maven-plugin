@@ -64,12 +64,14 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
                     .publickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(username, authorisedKeysFile, false))
                     .build();
             userAuthFactories.add(new UserAuthPublicKeyFactory());
+            getLog().info("Authentication using username: " + username + " authorized_keys: " + authorisedKeysFile);
         } else {
             sshd = ServerBuilder.builder().build();
         }
         if (password != null) {
             sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator(username, password));
             userAuthFactories.add(new UserAuthPasswordFactory());
+            getLog().info("Authentication using username: " + username + " password: " + password);
         }
         if (authorisedKeysFile == null && password == null) {
             userAuthFactories.add(new UserAuthNoneFactory());

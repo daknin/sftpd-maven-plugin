@@ -24,13 +24,13 @@ public class MojoTest {
         Model model = new Model();
         MavenProject project = new MavenProject(model);
         startMojo.setMavenProject(project);
-        startMojo.setServerRoot(new File(userDir + "/target/sftpd/root"));
+        startMojo.setServerRoot(new File(userDir + "/target/sftpd"));
         startMojo.setUsername("theUser");
         startMojo.setPassword("password");
         generateRsaKeyPair();
         startMojo.setAuthorisedKeysFile(new File(userDir + "/target/sftpd/authorized_keys"));
         startMojo.setServerKey(new File(userDir + "/target/sftpd/hostkey.pem"));
-        startMojo.setPort(2222);
+        startMojo.setPort(2223);
         startMojo.execute();
 
         sftpFileUsingPassword();
@@ -47,7 +47,7 @@ public class MojoTest {
     private void sftpFileUsingPassword() throws JSchException, SftpException {
         JSch jsch = new JSch();
         Session session = null;
-        session = jsch.getSession("theUser", "127.0.0.1", 2222);
+        session = jsch.getSession("theUser", "127.0.0.1", 2223);
         session.setConfig("StrictHostKeyChecking", "no");
         session.setPassword("password");
         session.connect();
@@ -64,7 +64,7 @@ public class MojoTest {
         JSch jsch = new JSch();
         Session session = null;
         jsch.addIdentity(new File("target/id_rsa").getAbsolutePath(), "password");
-        session = jsch.getSession("theUser", "127.0.0.1", 2222);
+        session = jsch.getSession("theUser", "127.0.0.1", 2223);
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
 

@@ -12,7 +12,7 @@ import java.io.File;
 
 public class SftpdPluginIT {
     @Test
-    public void sftpUsingPassword() throws Exception {
+    public void sftpUsingKey() throws Exception {
         Integer port = Integer.valueOf(System.getProperty("sftpd.port"));
 
         JSch jsch = new JSch();

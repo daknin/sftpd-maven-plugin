@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.daknin.ftpserver-maven-plugin.it</groupId>
-    <artifactId>start-stop-password</artifactId>
+    <artifactId>start-stop-key</artifactId>
     <version>0.0.1.BUILD-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,6 +95,7 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
+                    <username>theUser</username>
                     <port>${sftpd.port}</port>
                     <authorisedKeysFile>${project.build.directory}/test-classes/authorized_keys</authorisedKeysFile>
                 </configuration>
