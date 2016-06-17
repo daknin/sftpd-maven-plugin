@@ -52,7 +52,7 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
             Properties properties = mavenProject.getProperties();
             properties.put(SftpdConstants.FTPSERVER_KEY, sshd);
         } else {
-            throw new MojoFailureException("Can't add ftpserver instance as maven project is null");
+            throw new MojoFailureException("Can't add sftpserver instance as maven project is null");
         }
     }
 
