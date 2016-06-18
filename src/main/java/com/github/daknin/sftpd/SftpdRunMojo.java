@@ -26,8 +26,6 @@ import java.util.Properties;
 @Mojo(name = "run", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST)
 public class SftpdRunMojo extends AbstractSftpdMojo {
 
-    private SshServer sshd;
-
     public void execute() throws MojoFailureException {
         if (isSkip()) {
             return;
@@ -37,8 +35,9 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         if (!serverRootExists) {
             serverRootExists = serverRoot.mkdir();
         }
+        SshServer sshd;
         if (serverRootExists) {
-            initServer();
+            sshd = createServer();
             try {
                 sshd.start();
                 getLog().info("Started SFTP Server on port " + port);
@@ -50,28 +49,25 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         }
         if (mavenProject != null) {
             Properties properties = mavenProject.getProperties();
-            properties.put(SftpdConstants.FTPSERVER_KEY, sshd);
+            properties.put(SftpdConstants.SFTPSERVER_KEY, sshd);
         } else {
             throw new MojoFailureException("Can't add sftpserver instance as maven project is null");
         }
     }
 
-    private void initServer() throws MojoFailureException {
+    private SshServer createServer() throws MojoFailureException {
         getLog().info("About to start SFTP server...");
+        SshServer sshd = ServerBuilder.builder().build();
         List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
         if (authorisedKeysFile != null) {
-            sshd = ServerBuilder.builder()
-                    .publickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(username, authorisedKeysFile, false))
-                    .build();
+            sshd.setPublickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(username, authorisedKeysFile, false));
             userAuthFactories.add(new UserAuthPublicKeyFactory());
-            getLog().info("Authentication using username: " + username + " authorized_keys: " + authorisedKeysFile);
-        } else {
-            sshd = ServerBuilder.builder().build();
+            getLog().info("Authentication configured using username: " + username + " authorized_keys: " + authorisedKeysFile);
         }
         if (password != null) {
             sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator(username, password));
             userAuthFactories.add(new UserAuthPasswordFactory());
-            getLog().info("Authentication using username: " + username + " password: " + password);
+            getLog().info("Authentication configured using username: " + username + " password: " + password);
         }
         if (authorisedKeysFile == null && password == null) {
             userAuthFactories.add(new UserAuthNoneFactory());
@@ -93,5 +89,6 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         List<NamedFactory<Command>> namedFactoryList = new ArrayList<NamedFactory<Command>>();
         namedFactoryList.add(new SftpSubsystemFactory());
         sshd.setSubsystemFactories(namedFactoryList);
+        return sshd;
     }
 }

@@ -23,7 +23,7 @@ public abstract class AbstractSftpdMojo extends AbstractMojo {
     @Parameter(property = "authorisedKeysFile")
     protected File authorisedKeysFile;
 
-    @Parameter(property = "serverKey", defaultValue="hostkey.ser")
+    @Parameter(property = "serverKey", defaultValue="${project.build.directory}/hostkey.ser")
     protected File serverKey;
 
     @Parameter(property = "port", defaultValue = "2121")

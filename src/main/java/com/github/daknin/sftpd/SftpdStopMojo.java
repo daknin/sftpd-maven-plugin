@@ -15,33 +15,33 @@ public class SftpdStopMojo extends AbstractSftpdMojo {
         if (isSkip()) {
             return;
         }
-        getLog().info("Stopping FTP server...");
+        getLog().info("Stopping SFTP server...");
         Properties properties = null;
         if (mavenProject != null) {
             properties = mavenProject.getProperties();
         } else {
-            throw new MojoFailureException("Can't access maven project to stop FTP server (null)");
+            throw new MojoFailureException("Can't access maven project to stop SFTP server (null)");
         }
 
         if (properties != null) {
             SshServer sshd;
             try {
-                sshd = (SshServer) properties.get(SftpdConstants.FTPSERVER_KEY);
+                sshd = (SshServer) properties.get(SftpdConstants.SFTPSERVER_KEY);
             } catch (ClassCastException e) {
-                throw new MojoFailureException("Context doesn't contain a valid ftp server instance", e);
+                throw new MojoFailureException("Context doesn't contain a valid SFTP server instance", e);
             }
             if (sshd == null) {
-                throw new MojoFailureException("Context doesn't contain any ftp server instance");
+                throw new MojoFailureException("Context doesn't contain any SFTP server instance");
             }
             if (!sshd.isClosed()) {
                 try {
                     sshd.close();
                 } catch (Exception e) {
-                    throw new MojoFailureException("Failed to stop Sftpd", e);
+                    throw new MojoFailureException("Failed to stop SFTP server", e);
                 }
-                getLog().info("FTP server stopped.");
+                getLog().info("SFTP server stopped.");
             } else {
-                getLog().info("FTP server was stopped already");
+                getLog().info("SFTP server was stopped already");
             }
         } else {
             throw new MojoFailureException("Maven project has null properties", new NullPointerException());
