@@ -42,14 +42,13 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         if (isSkip()) {
             return;
         }
-        getLog().info("Server root is " + serverRoot.getPath());
-        boolean serverRootExists = serverRoot.exists();
+        boolean serverRootExists = getServerRoot().exists();
         if (!serverRootExists) {
-            serverRootExists = serverRoot.mkdir();
+            serverRootExists = getServerRoot().mkdir();
         }
         SshServer sshd;
         if (!serverRootExists) {
-            throw new MojoFailureException("Failed to create SFTP root " + serverRoot.getPath());
+            throw new MojoFailureException("Failed to create SFTP root " + getServerRoot().getPath());
         }
 
         sshd = createServer();
@@ -59,8 +58,8 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         } catch (IOException e) {
             throw new MojoFailureException("Failed to start SFTP server", e);
         }
-        if (mavenProject != null) {
-            Properties properties = mavenProject.getProperties();
+        if (getMavenProject() != null) {
+            Properties properties = getMavenProject().getProperties();
             properties.put(SftpdConstants.SFTPSERVER_KEY, sshd);
         } else {
             throw new MojoFailureException("Can't add sftpserver instance as maven project is null");
@@ -72,26 +71,26 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         SshServer sshd = serverBuilder.build();
         List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
         if (authorisedKeysFile != null) {
-            sshd.setPublickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(username, authorisedKeysFile, false));
+            sshd.setPublickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(getUsername(), getAuthorisedKeysFile(), false));
             userAuthFactories.add(new UserAuthPublicKeyFactory());
-            getLog().info("Authentication configured using username: " + username + " authorized_keys: " + authorisedKeysFile);
+            getLog().info("Authentication configured using username: " + getUsername() + " authorized_keys: " + getAuthorisedKeysFile());
         }
         if (password != null) {
-            sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator(username, password));
+            sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator(getUsername(), getPassword()));
             userAuthFactories.add(new UserAuthPasswordFactory());
-            getLog().info("Authentication configured using username: " + username + " password: " + password);
+            getLog().info("Authentication configured using username: " + getUsername() + " password: " + getPassword());
         }
         if (authorisedKeysFile == null && password == null) {
             userAuthFactories.add(new UserAuthNoneFactory());
         }
         sshd.setUserAuthFactories(userAuthFactories);
-        sshd.setPort(port);
+        sshd.setPort(getPort());
 
-        AbstractGeneratorHostKeyProvider hostKeyProvider = securityUtilsProvider.createGeneratorHostKeyProvider(serverKey.toPath());
+        AbstractGeneratorHostKeyProvider hostKeyProvider = securityUtilsProvider.createGeneratorHostKeyProvider(getServerKey().toPath());
         hostKeyProvider.setAlgorithm("RSA");
         sshd.setKeyPairProvider(hostKeyProvider);
 
-        sshd.setFileSystemFactory(new VirtualFileSystemFactory(serverRoot.getAbsolutePath()));
+        sshd.setFileSystemFactory(new VirtualFileSystemFactory(getServerRoot().getAbsolutePath()));
 
         sshd.setCommandFactory(new ScpCommandFactory());
 
