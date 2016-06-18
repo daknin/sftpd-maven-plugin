@@ -35,7 +35,7 @@ public class SftpdStopMojo extends AbstractSftpdMojo {
             }
             if (!sshd.isClosed()) {
                 try {
-                    sshd.close();
+                    sshd.stop();
                 } catch (Exception e) {
                     throw new MojoFailureException("Failed to stop SFTP server", e);
                 }

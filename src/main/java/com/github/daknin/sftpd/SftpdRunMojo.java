@@ -25,6 +25,18 @@ import java.util.Properties;
 
 @Mojo(name = "run", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST)
 public class SftpdRunMojo extends AbstractSftpdMojo {
+    private ServerBuilder serverBuilder;
+    private SecurityUtilsProvider securityUtilsProvider;
+
+    public SftpdRunMojo() {
+        serverBuilder = ServerBuilder.builder();
+        securityUtilsProvider = new MenaSecurityUtilsProvider();
+    }
+
+    SftpdRunMojo(ServerBuilder serverBuilder, SecurityUtilsProvider securityUtilsProvider) {
+        this.serverBuilder = serverBuilder;
+        this.securityUtilsProvider = securityUtilsProvider;
+    }
 
     public void execute() throws MojoFailureException {
         if (isSkip()) {
@@ -36,16 +48,16 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
             serverRootExists = serverRoot.mkdir();
         }
         SshServer sshd;
-        if (serverRootExists) {
-            sshd = createServer();
-            try {
-                sshd.start();
-                getLog().info("Started SFTP Server on port " + port);
-            } catch (IOException e) {
-                throw new MojoFailureException("Failed to start SFTP server", e);
-            }
-        } else {
+        if (!serverRootExists) {
             throw new MojoFailureException("Failed to create SFTP root " + serverRoot.getPath());
+        }
+
+        sshd = createServer();
+        try {
+            sshd.start();
+            getLog().info("Started SFTP Server on port " + port);
+        } catch (IOException e) {
+            throw new MojoFailureException("Failed to start SFTP server", e);
         }
         if (mavenProject != null) {
             Properties properties = mavenProject.getProperties();
@@ -57,7 +69,7 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
 
     private SshServer createServer() throws MojoFailureException {
         getLog().info("About to start SFTP server...");
-        SshServer sshd = ServerBuilder.builder().build();
+        SshServer sshd = serverBuilder.build();
         List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
         if (authorisedKeysFile != null) {
             sshd.setPublickeyAuthenticator(new DefaultAuthorizedKeysAuthenticator(username, authorisedKeysFile, false));
@@ -72,17 +84,14 @@ public class SftpdRunMojo extends AbstractSftpdMojo {
         if (authorisedKeysFile == null && password == null) {
             userAuthFactories.add(new UserAuthNoneFactory());
         }
-
+        sshd.setUserAuthFactories(userAuthFactories);
         sshd.setPort(port);
 
-        AbstractGeneratorHostKeyProvider hostKeyProvider = SecurityUtils.createGeneratorHostKeyProvider(serverKey.toPath());
+        AbstractGeneratorHostKeyProvider hostKeyProvider = securityUtilsProvider.createGeneratorHostKeyProvider(serverKey.toPath());
         hostKeyProvider.setAlgorithm("RSA");
         sshd.setKeyPairProvider(hostKeyProvider);
 
         sshd.setFileSystemFactory(new VirtualFileSystemFactory(serverRoot.getAbsolutePath()));
-
-        userAuthFactories.add(new UserAuthPublicKeyFactory());
-        sshd.setUserAuthFactories(userAuthFactories);
 
         sshd.setCommandFactory(new ScpCommandFactory());
 
